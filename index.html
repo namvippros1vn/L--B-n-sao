@@ -3,22 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Heart to QR - Nam Helios</title>
+    <title>Heart to QR 3D - Nam Helios</title>
 
     <style>
         html, body {
             margin: 0;
             padding: 0;
             height: 100%;
-            background: radial-gradient(circle, #190016, #000);
+            background: radial-gradient(ellipse at center, #0a0e2a 0%, #000000 100%);
             overflow: hidden;
             font-family: Arial, sans-serif;
+            perspective: 1000px;
+        }
+
+        .universe {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 5s infinite ease-in-out;
         }
 
         .container {
             position: relative;
             width: 100%;
             height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
         }
 
         /* Canvas trái tim */
@@ -26,11 +45,12 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%); 
-            z-index: 1;
+            transform: translate(-50%, -50%) rotateX(0deg) rotateY(0deg); 
+            z-index: 2;
             opacity: 1;
             transition: opacity 2.8s ease-in-out;
             filter: drop-shadow(0 0 20px #ff2fa8);
+            transform-style: preserve-3d;
         }
 
         /* QR container */
@@ -38,18 +58,19 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) scale(0.6);
-            z-index: 3;
+            transform: translate(-50%, -50%) scale(0.6) rotateX(0deg) rotateY(0deg);
+            z-index: 4;
             opacity: 0;
             transition: opacity 1.8s ease-in-out, transform 1.8s ease-in-out;
             display: flex;
             flex-direction: column;
             align-items: center;
+            transform-style: preserve-3d;
         }
 
         #qr-container.show {
             opacity: 1 !important;
-            transform: translate(-50%, -50%) scale(1);
+            transform: translate(-50%, -50%) scale(1) rotateX(0deg) rotateY(0deg);
             animation: glowPulse 4s infinite ease-in-out;
         }
 
@@ -61,6 +82,8 @@
             border-radius: 22px;
             box-shadow: 0 0 40px rgba(255, 52, 144, 0.8);
             animation: heartbeat 2.2s infinite ease-in-out;
+            transform-style: preserve-3d;
+            backdrop-filter: blur(10px);
         }
 
         #qr-code img {
@@ -76,6 +99,7 @@
             opacity: 0;
             transition: opacity 1.2s ease-in-out;
             text-shadow: 0 0 20px #ff2fa8;
+            transform: translateZ(50px);
         }
 
         .message.show {
@@ -98,19 +122,14 @@
                 0 0 25px #ff22d7,
                 0 0 45px #ff0acb;
             animation: sparkle 3s infinite ease-in-out;
+            transform: translateZ(30px);
         }
 
         .secret-text.show {
             opacity: 1 !important;
         }
 
-        @keyframes sparkle {
-            0%   { opacity: 0.4; transform: scale(1); }
-            50%  { opacity: 1; transform: scale(1.05); }
-            100% { opacity: 0.4; transform: scale(1); }
-        }
-
-        /* ⭐ Trái tim nhỏ rơi xuống */
+        /* ⭐ HIỆU ỨNG TỪ PANBAP - TRÁI TIM NHỎ RƠI */
         .falling-heart {
             position: absolute;
             top: -20px;
@@ -119,13 +138,245 @@
             animation: fall linear forwards;
             pointer-events: none;
             text-shadow: 0 0 12px #ff2ebd;
+            transform-style: preserve-3d;
+        }
+
+        /* ⭐ HIỆU ỨNG 3D MỚI - VÌ SAO BAY */
+        .floating-star {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            animation: floatStar 20s infinite linear;
+            transform-style: preserve-3d;
+        }
+
+        /* ⭐ HIỆU ỨNG 3D MỚI - TINH VÂN NHỎ */
+        .small-nebula {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(15px);
+            opacity: 0.1;
+            animation: smallNebulaFloat 30s infinite ease-in-out;
+            transform-style: preserve-3d;
+        }
+
+        /* ⭐ HIỆU ỨNG 3D MỚI - CỤM SAO NHỎ */
+        .small-star-cluster {
+            position: absolute;
+            transform-style: preserve-3d;
+            animation: smallClusterRotate 20s infinite linear;
+        }
+
+        /* ⭐ HIỆU ỨNG 3D MỚI - VỆ TINH NHỎ */
+        .small-satellite {
+            position: absolute;
+            width: 1px;
+            height: 3px;
+            background: #00ffff;
+            animation: smallSatelliteOrbit 10s infinite linear;
+            transform-style: preserve-3d;
+            box-shadow: 0 0 5px #00ffff;
+        }
+
+        /* ⭐ HIỆU ỨNG 3D MỚI - HẠT LƯỢNG TỬ */
+        .quantum-dot {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: #ff00ff;
+            animation: quantumPulse 2s infinite ease-in-out;
+            transform-style: preserve-3d;
+            box-shadow: 0 0 8px #ff00ff;
+        }
+
+        /* ⭐ HIỆU ỨNG TƯƠNG TÁC */
+        .interactive-star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 4s infinite ease-in-out;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .meteor-trail {
+            position: fixed;
+            border-radius: 2px;
+            pointer-events: none;
+            z-index: 100;
+            transition: all 0.1s ease;
+        }
+
+        .explosion-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1001;
+            transform-origin: center;
+        }
+
+        .light-trail {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            transform-origin: center;
+        }
+
+        .ripple-effect {
+            position: fixed;
+            pointer-events: none;
+            z-index: 998;
+            transform: translate(-50%, -50%);
+            background: transparent;
+        }
+
+        /* ⭐ HIỆU ỨNG CON TRỎ 3D */
+        .cursor-glow {
+            position: fixed;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(255, 0, 128, 0.6) 0%, rgba(255, 105, 180, 0.3) 30%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            transform: translate(-50%, -50%) translateZ(0);
+            mix-blend-mode: screen;
+            box-shadow: 0 0 50px rgba(255, 0, 128, 0.8);
+            transition: all 0.2s ease;
+        }
+
+        /* ⭐ THÔNG BÁO HƯỚNG DẪN 3D */
+        .instruction {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateZ(50px);
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+            animation: instructionPulse 4s infinite;
+        }
+
+        /* ANIMATIONS */
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        @keyframes enhancedTwinkle {
+            0%, 100% { 
+                opacity: 0.4; 
+                transform: scale(1);
+                filter: brightness(1);
+            }
+            25% { 
+                opacity: 0.8; 
+                transform: scale(1.1);
+                filter: brightness(1.3);
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.2);
+                filter: brightness(1.5);
+            }
+            75% { 
+                opacity: 0.8; 
+                transform: scale(1.1);
+                filter: brightness(1.3);
+            }
+        }
+
+        @keyframes floatStar {
+            0% {
+                transform: translateZ(-500px) translateX(-100vw) translateY(-100vh);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateZ(500px) translateX(100vw) translateY(100vh);
+                opacity: 0;
+            }
+        }
+
+        @keyframes smallNebulaFloat {
+            0%, 100% { 
+                transform: translateZ(-300px) scale(1) rotate(0deg);
+                opacity: 0.08;
+            }
+            50% { 
+                transform: translateZ(-200px) scale(1.1) rotate(90deg);
+                opacity: 0.12;
+            }
+        }
+
+        @keyframes smallClusterRotate {
+            from { transform: rotateY(0deg) translateZ(-500px); }
+            to { transform: rotateY(360deg) translateZ(-500px); }
+        }
+
+        @keyframes smallSatelliteOrbit {
+            from { transform: rotateY(0deg) translateX(80px) translateZ(-150px); }
+            to { transform: rotateY(360deg) translateX(80px) translateZ(-150px); }
+        }
+
+        @keyframes quantumPulse {
+            0%, 100% { 
+                transform: scale(1) translateZ(0);
+                opacity: 0.7;
+            }
+            50% { 
+                transform: scale(1.3) translateZ(20px);
+                opacity: 1;
+            }
+        }
+
+        @keyframes floatGently {
+            0%, 100% { 
+                transform: translateY(0px) rotate(0deg); 
+            }
+            50% { 
+                transform: translateY(-10px) rotate(5deg); 
+            }
+        }
+
+        @keyframes starClick {
+            0% { transform: scale(1); }
+            50% { transform: scale(8); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes float3D {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            25% { transform: translateY(-20px) translateX(10px); }
+            50% { transform: translateY(0px) translateX(20px); }
+            75% { transform: translateY(20px) translateX(10px); }
         }
 
         @keyframes fall {
             to {
-                transform: translateY(110vh) rotate(360deg);
+                transform: translateY(110vh) rotate(360deg) translateZ(50px);
                 opacity: 0;
             }
+        }
+
+        @keyframes sparkle {
+            0%   { opacity: 0.4; transform: scale(1) translateZ(30px); }
+            50%  { opacity: 1; transform: scale(1.05) translateZ(50px); }
+            100% { opacity: 0.4; transform: scale(1) translateZ(30px); }
         }
 
         /* EFFECTS QR + HEART */
@@ -136,27 +387,39 @@
         }
 
         @keyframes heartbeat {
-            0%   { transform: scale(1); }
-            20%  { transform: scale(1.08); }
-            40%  { transform: scale(1); }
-            60%  { transform: scale(1.08); }
-            80%  { transform: scale(1); }
-            100% { transform: scale(1); }
+            0%   { transform: scale(1) translateZ(0); }
+            20%  { transform: scale(1.08) translateZ(20px); }
+            40%  { transform: scale(1) translateZ(0); }
+            60%  { transform: scale(1.08) translateZ(20px); }
+            80%  { transform: scale(1) translateZ(0); }
+            100% { transform: scale(1) translateZ(0); }
         }
 
         @keyframes softShake {
-            0%   { transform: translate(0,0); }
-            25%  { transform: translate(1px,-1px); }
-            50%  { transform: translate(-1px, 1px); }
-            75%  { transform: translate(1px, 1px); }
-            100% { transform: translate(0,0); }
+            0%   { transform: translate(0,0) translateZ(0); }
+            25%  { transform: translate(1px,-1px) translateZ(10px); }
+            50%  { transform: translate(-1px, 1px) translateZ(-10px); }
+            75%  { transform: translate(1px, 1px) translateZ(5px); }
+            100% { transform: translate(0,0) translateZ(0); }
+        }
+
+        @keyframes instructionPulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
         }
 
     </style>
 </head>
 
 <body>
-    <div class="container">
+    <div class="universe" id="universe"></div>
+    <div class="cursor-glow" id="cursorGlow"></div>
+    
+    <div class="instruction">
+        🚀 Di chuyển chuột để khám phá vũ trụ 3D
+    </div>
+
+    <div class="container" id="mainContainer">
         <canvas id="pinkboard"></canvas>
 
         <div id="qr-container">
@@ -172,7 +435,486 @@
 
     <script>
         /* ==============================
-           ⭐ TRÁI TIM NHỎ RƠI NGẪU NHIÊN
+           ⭐ TẠO VŨ TRỤ 3D VỚI SAO VÀ HIỆU ỨNG NHỎ
+        ===============================*/
+        function createUniverse() {
+            const universe = document.getElementById('universe');
+            
+            // Tạo các ngôi sao nền
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                const size = Math.random() * 2;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+                
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                
+                universe.appendChild(star);
+            }
+
+            // Tạo các vì sao bay 3D
+            for (let i = 0; i < 30; i++) {
+                createFloatingStar();
+            }
+
+            // Tạo tinh vân nhỏ
+            for (let i = 0; i < 8; i++) {
+                createSmallNebula();
+            }
+
+            // Tạo cụm sao nhỏ
+            for (let i = 0; i < 6; i++) {
+                createSmallStarCluster();
+            }
+
+            // Tạo vệ tinh nhỏ
+            for (let i = 0; i < 4; i++) {
+                createSmallSatellite();
+            }
+
+            // Tạo hạt lượng tử
+            for (let i = 0; i < 15; i++) {
+                createQuantumDot();
+            }
+
+            // Tạo sao tương tác
+            for (let i = 0; i < 20; i++) {
+                createInteractiveStar();
+            }
+        }
+
+        function createFloatingStar() {
+            const star = document.createElement('div');
+            star.classList.add('floating-star');
+            
+            const size = 1 + Math.random() * 2;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            
+            star.style.left = `${Math.random() * 100}vw`;
+            star.style.top = `${Math.random() * 100}vh`;
+            
+            const duration = 8 + Math.random() * 15;
+            star.style.animationDuration = `${duration}s`;
+            
+            const colors = ['#ffffff', '#ff6b6b', '#4ecdc4', '#45b7d1', '#ffbe0b'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            star.style.background = color;
+            star.style.boxShadow = `0 0 ${3 + Math.random() * 5}px ${color}`;
+            
+            document.body.appendChild(star);
+        }
+
+        function createSmallNebula() {
+            const nebula = document.createElement('div');
+            nebula.classList.add('small-nebula');
+            
+            const size = 50 + Math.random() * 100;
+            nebula.style.width = `${size}px`;
+            nebula.style.height = `${size}px`;
+            
+            nebula.style.left = `${Math.random() * 100}%`;
+            nebula.style.top = `${Math.random() * 100}%`;
+            
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#ffbe0b', '#8338ec'];
+            const color1 = colors[Math.floor(Math.random() * colors.length)];
+            const color2 = colors[Math.floor(Math.random() * colors.length)];
+            nebula.style.background = `radial-gradient(circle, ${color1}, ${color2}, transparent)`;
+            
+            nebula.style.animationDelay = `${Math.random() * 20}s`;
+            
+            document.body.appendChild(nebula);
+        }
+
+        function createSmallStarCluster() {
+            const cluster = document.createElement('div');
+            cluster.classList.add('small-star-cluster');
+            
+            const starCount = 5 + Math.floor(Math.random() * 8);
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.style.position = 'absolute';
+                star.style.width = '1px';
+                star.style.height = '1px';
+                star.style.background = 'white';
+                star.style.borderRadius = '50%';
+                star.style.left = `${Math.random() * 40}px`;
+                star.style.top = `${Math.random() * 40}px`;
+                star.style.boxShadow = '0 0 3px white';
+                
+                cluster.appendChild(star);
+            }
+            
+            cluster.style.left = `${Math.random() * 100}%`;
+            cluster.style.top = `${Math.random() * 100}%`;
+            cluster.style.animationDelay = `${Math.random() * 10}s`;
+            
+            document.body.appendChild(cluster);
+        }
+
+        function createSmallSatellite() {
+            const satellite = document.createElement('div');
+            satellite.classList.add('small-satellite');
+            
+            satellite.style.animationDelay = `${Math.random() * 10}s`;
+            
+            document.body.appendChild(satellite);
+        }
+
+        function createQuantumDot() {
+            const dot = document.createElement('div');
+            dot.classList.add('quantum-dot');
+            
+            dot.style.left = `${Math.random() * 100}vw`;
+            dot.style.top = `${Math.random() * 100}vh`;
+            dot.style.animationDelay = `${Math.random() * 2}s`;
+            
+            const colors = ['#ff00ff', '#00ffff', '#ffff00', '#ff6b6b', '#4ecdc4'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            dot.style.background = color;
+            dot.style.boxShadow = `0 0 8px ${color}`;
+            
+            document.body.appendChild(dot);
+        }
+
+        function createInteractiveStar() {
+            const star = document.createElement('div');
+            star.className = 'interactive-star';
+            star.style.animation = 'float3D 8s infinite ease-in-out';
+            
+            star.style.width = '4px';
+            star.style.height = '4px';
+            star.style.background = 'white';
+            star.style.borderRadius = '50%';
+            star.style.boxShadow = '0 0 10px white';
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.top = Math.random() * 100 + 'vh';
+            star.style.cursor = 'pointer';
+            star.style.zIndex = '2';
+            star.style.transition = 'all 0.5s ease';
+            
+            star.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(5)';
+                this.style.background = '#ffff00';
+                this.style.boxShadow = '0 0 30px #ffff00, 0 0 60px #ffa500';
+                this.style.zIndex = '1000';
+            });
+            
+            star.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+                this.style.background = 'white';
+                this.style.boxShadow = '0 0 10px white';
+                this.style.zIndex = '2';
+            });
+            
+            star.addEventListener('click', function(e) {
+                e.stopPropagation();
+                createStarExplosion(e.clientX, e.clientY);
+                this.style.animation = 'starClick 0.6s ease';
+                setTimeout(() => {
+                    this.style.animation = 'float3D 8s infinite ease-in-out';
+                }, 600);
+            });
+            
+            document.body.appendChild(star);
+        }
+
+        /* ==============================
+           ⭐ HIỆU ỨNG DI CHUYỂN 3D RÕ RÀNG
+        ===============================*/
+        function init3DEffect() {
+            const container = document.getElementById('mainContainer');
+            const cursorGlow = document.getElementById('cursorGlow');
+            
+            let mouseX = 0;
+            let mouseY = 0;
+            let containerX = 0;
+            let containerY = 0;
+            let isMouseMoving = false;
+            let mouseStopTimer;
+            
+            document.addEventListener('mousemove', (e) => {
+                isMouseMoving = true;
+                
+                mouseX = (e.clientX / window.innerWidth - 0.5) * 3;
+                mouseY = (e.clientY / window.innerHeight - 0.5) * 3;
+                
+                cursorGlow.style.left = e.clientX + 'px';
+                cursorGlow.style.top = e.clientY + 'px';
+                
+                const speed = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
+                
+                if (speed > 0.2 && Math.random() < 0.4) {
+                    createMeteor(e.clientX, e.clientY, speed);
+                }
+                
+                if (speed > 0.5) {
+                    createLightTrail(e.clientX, e.clientY);
+                }
+                
+                clearTimeout(mouseStopTimer);
+                mouseStopTimer = setTimeout(() => {
+                    isMouseMoving = false;
+                }, 150);
+            });
+            
+            document.addEventListener('mouseenter', () => {
+                cursorGlow.style.opacity = '1';
+                cursorGlow.style.transform = 'translate(-50%, -50%) scale(1)';
+            });
+            
+            document.addEventListener('mouseleave', () => {
+                cursorGlow.style.opacity = '0';
+                cursorGlow.style.transform = 'translate(-50%, -50%) scale(0.5)';
+                isMouseMoving = false;
+            });
+            
+            document.addEventListener('click', (e) => {
+                createRippleEffect(e.clientX, e.clientY);
+                createStarExplosion(e.clientX, e.clientY);
+            });
+            
+            function animate() {
+                containerX += (mouseX * 25 - containerX) * 0.08;
+                containerY += (mouseY * 25 - containerY) * 0.08;
+                
+                if (!isMouseMoving) {
+                    const time = Date.now() * 0.001;
+                    containerX += Math.sin(time * 0.8) * 2;
+                    containerY += Math.cos(time * 0.6) * 2;
+                }
+                
+                const scale = isMouseMoving ? 1.05 : 1;
+                const rotateY = containerX;
+                const rotateX = -containerY;
+                
+                container.style.transform = `
+                    rotateY(${rotateY}deg)
+                    rotateX(${rotateX}deg)
+                    scale(${scale})
+                    perspective(1000px)
+                `;
+                
+                updateParallaxElements(containerX, containerY);
+                updateCursorEffect(mouseX, mouseY);
+                updateStarEffects(containerX, containerY);
+                
+                requestAnimationFrame(animate);
+            }
+            
+            function updateParallaxElements(x, y) {
+                const elements = {
+                    '.floating-star': 0.8,
+                    '.small-nebula': 0.5,
+                    '.small-star-cluster': 0.6,
+                    '.quantum-dot': 1.0,
+                    '.small-satellite': 0.7
+                };
+                
+                Object.entries(elements).forEach(([selector, depth]) => {
+                    const elements = document.querySelectorAll(selector);
+                    elements.forEach((element) => {
+                        const moveX = x * 40 * depth;
+                        const moveY = y * 40 * depth;
+                        const baseTransform = element.style.transform.split('translate')[0];
+                        element.style.transform = `${baseTransform} translate(${moveX}px, ${moveY}px)`;
+                    });
+                });
+            }
+            
+            function updateCursorEffect(x, y) {
+                const intensity = Math.sqrt(x * x + y * y);
+                const scale = 1 + intensity * 1.0;
+                const blur = 8 + intensity * 15;
+                const colorIntensity = Math.min(1, intensity * 2);
+                
+                cursorGlow.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                cursorGlow.style.filter = `blur(${blur}px) brightness(${1 + colorIntensity})`;
+                cursorGlow.style.background = `
+                    radial-gradient(
+                        circle,
+                        rgba(255, 0, 128, ${0.6 + colorIntensity * 0.4}) 0%,
+                        rgba(255, 105, 180, ${0.4 + colorIntensity * 0.3}) 30%,
+                        transparent 70%
+                    )
+                `;
+            }
+            
+            function updateStarEffects(x, y) {
+                const stars = document.querySelectorAll('.floating-star, .star');
+                stars.forEach((star, index) => {
+                    const sensitivity = 0.5 + (index % 3) * 0.3;
+                    const pulse = Math.sin(Date.now() * 0.002 + index) * 0.3 + 0.7;
+                    
+                    star.style.transform = `
+                        ${star.style.transform.split('scale')[0]}
+                        scale(${pulse})
+                        translate(${x * 20 * sensitivity}px, ${y * 20 * sensitivity}px)
+                    `;
+                });
+            }
+            
+            animate();
+        }
+
+        /* ==============================
+           ⭐ HIỆU ỨNG SAO BĂNG VÀ TƯƠNG TÁC
+        ===============================*/
+        function createMeteor(x, y, speed) {
+            const meteor = document.createElement('div');
+            meteor.className = 'meteor-trail';
+            
+            const length = 80 + speed * 50;
+            const width = 3 + speed * 2;
+            
+            meteor.style.width = `${width}px`;
+            meteor.style.height = `${length}px`;
+            meteor.style.left = x + 'px';
+            meteor.style.top = y + 'px';
+            
+            const colors = [
+                'linear-gradient(to bottom, #ffffff, #ff0000, transparent)',
+                'linear-gradient(to bottom, #ffffff, #00ffff, transparent)',
+                'linear-gradient(to bottom, #ffffff, #ffff00, transparent)',
+                'linear-gradient(to bottom, #ffffff, #ff00ff, transparent)'
+            ];
+            meteor.style.background = colors[Math.floor(Math.random() * colors.length)];
+            meteor.style.boxShadow = '0 0 30px currentColor';
+            
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 100 + speed * 150;
+            const targetX = x + Math.cos(angle) * distance;
+            const targetY = y + Math.sin(angle) * distance;
+            
+            const animation = meteor.animate([
+                { 
+                    transform: 'translate(0, 0) rotate(0deg)',
+                    opacity: 1,
+                    filter: 'blur(0px) brightness(2)'
+                },
+                { 
+                    transform: `translate(${targetX - x}px, ${targetY - y}px) rotate(180deg)`,
+                    opacity: 0,
+                    filter: 'blur(10px) brightness(0.5)'
+                }
+            ], {
+                duration: 400 + speed * 300,
+                easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)'
+            });
+            
+            document.body.appendChild(meteor);
+            animation.onfinish = () => meteor.remove();
+            setTimeout(() => meteor.remove(), 2000);
+        }
+
+        function createLightTrail(x, y) {
+            const trail = document.createElement('div');
+            trail.className = 'light-trail';
+            
+            trail.style.width = '8px';
+            trail.style.height = '8px';
+            trail.style.left = x + 'px';
+            trail.style.top = y + 'px';
+            trail.style.background = 'radial-gradient(circle, #ffff00, #ffa500, transparent)';
+            trail.style.boxShadow = '0 0 20px #ffff00';
+            trail.style.borderRadius = '50%';
+            
+            document.body.appendChild(trail);
+            
+            trail.animate([
+                { transform: 'scale(1)', opacity: 1 },
+                { transform: 'scale(0)', opacity: 0 }
+            ], { duration: 500, easing: 'ease-out' });
+            
+            setTimeout(() => trail.remove(), 500);
+        }
+
+        function createRippleEffect(x, y) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple-effect';
+            
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.style.width = '20px';
+            ripple.style.height = '20px';
+            ripple.style.border = '3px solid #00ffff';
+            ripple.style.borderRadius = '50%';
+            ripple.style.boxShadow = '0 0 30px #00ffff';
+            
+            document.body.appendChild(ripple);
+            
+            ripple.animate([
+                { 
+                    transform: 'translate(-50%, -50%) scale(1)',
+                    opacity: 1,
+                    borderWidth: '3px'
+                },
+                { 
+                    transform: 'translate(-50%, -50%) scale(8)',
+                    opacity: 0,
+                    borderWidth: '1px'
+                }
+            ], { duration: 1200, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' });
+            
+            setTimeout(() => ripple.remove(), 1200);
+        }
+
+        function createStarExplosion(x, y) {
+            const particleCount = 12;
+            
+            for (let i = 0; i < particleCount; i++) {
+                setTimeout(() => {
+                    createExplosionParticle(x, y);
+                }, i * 30);
+            }
+        }
+
+        function createExplosionParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.className = 'explosion-particle';
+            
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            particle.style.width = '6px';
+            particle.style.height = '6px';
+            particle.style.borderRadius = '50%';
+            particle.style.boxShadow = '0 0 15px currentColor';
+            
+            const colors = ['#ff0000', '#00ffff', '#ffff00', '#ff00ff', '#00ff00'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.background = color;
+            
+            document.body.appendChild(particle);
+            
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 40 + Math.random() * 80;
+            const targetX = x + Math.cos(angle) * distance;
+            const targetY = y + Math.sin(angle) * distance;
+            
+            particle.animate([
+                { 
+                    transform: 'scale(1) translate(0, 0)',
+                    opacity: 1,
+                    filter: 'brightness(2)'
+                },
+                { 
+                    transform: `scale(0.2) translate(${targetX - x}px, ${targetY - y}px)`,
+                    opacity: 0,
+                    filter: 'brightness(0.5)'
+                }
+            ], { duration: 800, easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)' });
+            
+            setTimeout(() => particle.remove(), 800);
+        }
+
+        /* ==============================
+           ⭐ HIỆU ỨNG TỪ PANBAP - TRÁI TIM NHỎ RƠI
         ===============================*/
         function createFallingHeart() {
             const heart = document.createElement("div");
@@ -180,20 +922,16 @@
             heart.innerHTML = "❤";
 
             heart.style.left = Math.random() * window.innerWidth + "px";
-            heart.style.fontSize = (14 + Math.random() * 14) + "px";
-            heart.style.animationDuration = (3 + Math.random() * 3) + "s";
+            heart.style.fontSize = (12 + Math.random() * 10) + "px";
+            heart.style.animationDuration = (2 + Math.random() * 2) + "s";
 
             document.body.appendChild(heart);
-
-            setTimeout(() => heart.remove(), 6000);
+            setTimeout(() => heart.remove(), 4000);
         }
-
-        setInterval(createFallingHeart, 300);
 
         /* ============================== 
            ⚡ CODE GỐC TRÁI TIM TAN + QR
         ===============================*/
-
         var settings = {
             particles: { length:4800, duration:2.6, velocity:210, effect:-0.75, size:14 },
         };
@@ -317,6 +1055,34 @@
             render();
 
         })(document.getElementById("pinkboard"));
+
+        /* ==============================
+           ⭐ KHỞI CHẠY TẤT CẢ HIỆU ỨNG
+        ===============================*/
+        function initializeAllEffects() {
+            console.log('🚀 Khởi tạo hệ thống 3D hoàn chỉnh...');
+            
+            createUniverse();
+            init3DEffect();
+            
+            setInterval(createFallingHeart, 400);
+
+            setTimeout(() => {
+                document.querySelector('.instruction').style.opacity = '0';
+                setTimeout(() => {
+                    document.querySelector('.instruction').style.display = 'none';
+                }, 1000);
+            }, 5000);
+
+            console.log('🎉 Hệ thống 3D hoàn chỉnh đã sẵn sàng!');
+        }
+
+        window.addEventListener('load', initializeAllEffects);
+        window.addEventListener('resize', () => {
+            const container = document.getElementById('mainContainer');
+            container.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1)';
+        });
+
     </script>
 </body>
 </html>
