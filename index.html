@@ -10,7 +10,7 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            background: #000;
+            background: radial-gradient(circle, #190016, #000);
             overflow: hidden;
             font-family: Arial, sans-serif;
         }
@@ -29,48 +29,129 @@
             transform: translate(-50%, -50%); 
             z-index: 1;
             opacity: 1;
-            transition: opacity 2.5s ease-in-out;
+            transition: opacity 2.8s ease-in-out;
+            filter: drop-shadow(0 0 20px #ff2fa8);
         }
 
-        /* Container QR */
+        /* QR container */
         #qr-container {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) scale(0.6);
             z-index: 3;
             opacity: 0;
-            transition: opacity 2s ease-in-out;
+            transition: opacity 1.8s ease-in-out, transform 1.8s ease-in-out;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
+        #qr-container.show {
+            opacity: 1 !important;
+            transform: translate(-50%, -50%) scale(1);
+            animation: glowPulse 4s infinite ease-in-out;
+        }
+
         #qr-code {
-            width: 300px;
-            height: 300px;
+            width: 320px;
+            height: 320px;
             background: #fff;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 0 25px rgba(255, 52, 144, 0.6);
+            padding: 22px;
+            border-radius: 22px;
+            box-shadow: 0 0 40px rgba(255, 52, 144, 0.8);
+            animation: heartbeat 2.2s infinite ease-in-out;
         }
 
         #qr-code img {
             width: 100%;
             height: 100%;
+            animation: softShake 4.5s infinite ease-in-out;
         }
 
         .message {
-            margin-top: 15px;
+            margin-top: 20px;
             color: white;
-            font-size: 18px;
+            font-size: 20px;
             opacity: 0;
-            transition: opacity 1s ease-in-out;
+            transition: opacity 1.2s ease-in-out;
+            text-shadow: 0 0 20px #ff2fa8;
         }
 
-        .show {
+        .message.show {
             opacity: 1 !important;
         }
+
+        /* ⭐ DÒNG CHỮ MỚI PHÁT SÁNG */
+        .secret-text {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 26px;
+            color: #ff4ecb;
+            opacity: 0;
+            letter-spacing: 2px;
+            font-weight: bold;
+            text-shadow: 
+                0 0 10px #ff37c9,
+                0 0 25px #ff22d7,
+                0 0 45px #ff0acb;
+            animation: sparkle 3s infinite ease-in-out;
+        }
+
+        .secret-text.show {
+            opacity: 1 !important;
+        }
+
+        @keyframes sparkle {
+            0%   { opacity: 0.4; transform: scale(1); }
+            50%  { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.4; transform: scale(1); }
+        }
+
+        /* ⭐ Trái tim nhỏ rơi xuống */
+        .falling-heart {
+            position: absolute;
+            top: -20px;
+            color: #ff4da6;
+            font-size: 18px;
+            animation: fall linear forwards;
+            pointer-events: none;
+            text-shadow: 0 0 12px #ff2ebd;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(110vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* EFFECTS QR + HEART */
+        @keyframes glowPulse {
+            0% { filter: drop-shadow(0 0 15px #ff008c); }
+            50% { filter: drop-shadow(0 0 45px #ff20d4); }
+            100% { filter: drop-shadow(0 0 15px #ff008c); }
+        }
+
+        @keyframes heartbeat {
+            0%   { transform: scale(1); }
+            20%  { transform: scale(1.08); }
+            40%  { transform: scale(1); }
+            60%  { transform: scale(1.08); }
+            80%  { transform: scale(1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes softShake {
+            0%   { transform: translate(0,0); }
+            25%  { transform: translate(1px,-1px); }
+            50%  { transform: translate(-1px, 1px); }
+            75%  { transform: translate(1px, 1px); }
+            100% { transform: translate(0,0); }
+        }
+
     </style>
 </head>
 
@@ -82,223 +163,160 @@
             <div id="qr-code">
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://me-qr.com/AVSRUIF5">
             </div>
-            <div class="message">Quét mã QR để khám phá</div>
+            <div class="message">✨ Quét mã QR để khám phá ✨</div>
         </div>
+
+        <!-- ⭐ Dòng chữ mới -->
+        <div class="secret-text" id="secret">Tôi không ngờ bạn lại bấm vào đây</div>
     </div>
 
     <script>
+        /* ==============================
+           ⭐ TRÁI TIM NHỎ RƠI NGẪU NHIÊN
+        ===============================*/
+        function createFallingHeart() {
+            const heart = document.createElement("div");
+            heart.classList.add("falling-heart");
+            heart.innerHTML = "❤";
+
+            heart.style.left = Math.random() * window.innerWidth + "px";
+            heart.style.fontSize = (14 + Math.random() * 14) + "px";
+            heart.style.animationDuration = (3 + Math.random() * 3) + "s";
+
+            document.body.appendChild(heart);
+
+            setTimeout(() => heart.remove(), 6000);
+        }
+
+        setInterval(createFallingHeart, 300);
+
+        /* ============================== 
+           ⚡ CODE GỐC TRÁI TIM TAN + QR
+        ===============================*/
+
         var settings = {
-            particles: {
-                length: 4500,
-                duration: 2.6,
-                velocity: 200,
-                effect: -0.7,
-                size: 14,
-            },
+            particles: { length:4800, duration:2.6, velocity:210, effect:-0.75, size:14 },
         };
 
-        var Point = function(x, y) {
-            this.x = x || 0;
-            this.y = y || 0;
-        };
-        Point.prototype.clone = function() {
-            return new Point(this.x, this.y);
-        };
-        Point.prototype.length = function(len) {
-            if (len === undefined)
-                return Math.sqrt(this.x * this.x + this.y * this.y);
-            this.normalize();
-            this.x *= len;
-            this.y *= len;
-            return this;
-        };
-        Point.prototype.normalize = function() {
-            var length = this.length();
-            this.x /= length;
-            this.y /= length;
-            return this;
-        };
+        var Point=function(x,y){this.x=x||0;this.y=y||0;};
+        Point.prototype.clone=function(){return new Point(this.x,this.y);};
+        Point.prototype.length=function(l){if(l===undefined)return Math.sqrt(this.x*this.x+this.y*this.y);this.normalize();this.x*=l;this.y*=l;return this;};
+        Point.prototype.normalize=function(){var l=this.length();this.x/=l;this.y/=l;return this;};
 
-        var Particle = function() {
-            this.position = new Point();
-            this.velocity = new Point();
-            this.acceleration = new Point();
-            this.age = 0;
-        };
-        Particle.prototype.initialize = function(x, y, dx, dy) {
-            this.position.x = x;
-            this.position.y = y;
-            this.velocity.x = dx;
-            this.velocity.y = dy;
-            this.acceleration.x = dx * settings.particles.effect;
-            this.acceleration.y = dy * settings.particles.effect;
-            this.age = 0;
-        };
-        Particle.prototype.update = function(dt) {
-            this.position.x += this.velocity.x * dt;
-            this.position.y += this.velocity.y * dt;
-            this.velocity.x += this.acceleration.x * dt;
-            this.velocity.y += this.acceleration.y * dt;
-            this.age += dt;
-        };
-        Particle.prototype.draw = function(ctx, image) {
-            function ease(t) { return (--t) * t * t + 1; }
-            var size = image.width * ease(this.age / settings.particles.duration);
-            ctx.globalAlpha = 1 - this.age / settings.particles.duration;
-            ctx.drawImage(image,
-                this.position.x - size / 2,
-                this.position.y - size / 2,
-                size, size
-            );
-        };
+        var Particle=function(){this.position=new Point();this.velocity=new Point();this.acceleration=new Point();this.age=0;};
+        Particle.prototype.initialize=function(x,y,dx,dy){this.position.x=x;this.position.y=y;this.velocity.x=dx;this.velocity.y=dy;this.acceleration.x=dx*settings.particles.effect;this.acceleration.y=dy*settings.particles.effect;this.age=0;};
+        Particle.prototype.update=function(dt){this.position.x+=this.velocity.x*dt;this.position.y+=this.velocity.y*dt;this.velocity.x+=this.acceleration.x*dt;this.velocity.y+=this.acceleration.y*dt;this.age+=dt;};
+        Particle.prototype.draw=function(ctx,img){function ease(t){return(--t)*t*t+1;}var s=img.width*ease(this.age/settings.particles.duration);ctx.globalAlpha=1-this.age/settings.particles.duration;ctx.drawImage(img,this.position.x-s/2,this.position.y-s/2,s,s);};
 
-        var ParticlePool = function(length) {
-            this.particles = new Array(length);
-            for (var i = 0; i < length; i++)
-                this.particles[i] = new Particle();
-            this.firstActive = 0;
-            this.firstFree = 0;
-            this.duration = settings.particles.duration;
-        };
-        ParticlePool.prototype.add = function(x, y, dx, dy) {
-            this.particles[this.firstFree].initialize(x, y, dx, dy);
-            this.firstFree++;
-            if (this.firstFree === this.particles.length) this.firstFree = 0;
-            if (this.firstActive === this.firstFree) {
-                this.firstActive++;
-                if (this.firstActive === this.particles.length) this.firstActive = 0;
-            }
-        };
-        ParticlePool.prototype.update = function(dt) {
-            var i;
-            if (this.firstActive < this.firstFree) {
-                for (i = this.firstActive; i < this.firstFree; i++)
-                    this.particles[i].update(dt);
-            } else {
-                for (i = this.firstActive; i < this.particles.length; i++)
-                    this.particles[i].update(dt);
-                for (i = 0; i < this.firstFree; i++)
-                    this.particles[i].update(dt);
-            }
-            while (this.particles[this.firstActive].age >= this.duration &&
-                   this.firstActive !== this.firstFree) {
-                this.firstActive++;
-                if (this.firstActive === this.particles.length) this.firstActive = 0;
-            }
-        };
-        ParticlePool.prototype.draw = function(ctx, image) {
-            var i;
-            if (this.firstActive < this.firstFree) {
-                for (i = this.firstActive; i < this.firstFree; i++)
-                    this.particles[i].draw(ctx, image);
-            } else {
-                for (i = this.firstActive; i < this.particles.length; i++)
-                    this.particles[i].draw(ctx, image);
-                for (i = 0; i < this.firstFree; i++)
-                    this.particles[i].draw(ctx, image);
-            }
-        };
+        var ParticlePool=function(l){this.particles=new Array(l);for(var i=0;i<l;i++)this.particles[i]=new Particle();this.firstActive=0;this.firstFree=0;this.duration=settings.particles.duration;};
 
-        (function(canvas) {
-            var ctx = canvas.getContext("2d");
-            var particles = new ParticlePool(settings.particles.length);
-            var particleRate = settings.particles.length / settings.particles.duration;
+        ParticlePool.prototype.add=function(x,y,dx,dy){this.particles[this.firstFree].initialize(x,y,dx,dy);this.firstFree++;if(this.firstFree===this.particles.length)this.firstFree=0;if(this.firstActive===this.firstFree){this.firstActive++;if(this.firstActive===this.particles.length)this.firstActive=0;}};
+
+        ParticlePool.prototype.update=function(dt){var i;if(this.firstActive<this.firstFree){for(i=this.firstActive;i<this.firstFree;i++)this.particles[i].update(dt);}else{for(i=this.firstActive;i<this.particles.length;i++)this.particles[i].update(dt);for(i=0;i<this.firstFree;i++)this.particles[i].update(dt);}while(this.particles[this.firstActive].age>=this.duration&&this.firstActive!==this.firstFree){this.firstActive++;if(this.firstActive===this.particles.length)this.firstActive=0;}};
+
+        ParticlePool.prototype.draw=function(ctx,img){var i;if(this.firstActive<this.firstFree){for(i=this.firstActive;i<this.firstFree;i++)this.particles[i].draw(ctx,img);}else{for(i=this.firstActive;i<this.particles.length;i++)this.particles[i].draw(ctx,img);for(i=0;i<this.firstFree;i++)this.particles[i].draw(ctx,img);}};
+
+        (function(canvas){
+            var ctx=canvas.getContext("2d");
+            var particles=new ParticlePool(settings.particles.length);
+            var particleRate=settings.particles.length/settings.particles.duration;
             var time;
 
-            var heartPoint = function(t) {
+            var heartPoint=function(t){
                 return new Point(
-                    160 * Math.pow(Math.sin(t), 3),
-                    130 * Math.cos(t) - 50 * Math.cos(2*t)
-                    - 20 * Math.cos(3*t) - 10 * Math.cos(4*t) + 25
+                    160*Math.pow(Math.sin(t),3),
+                    130*Math.cos(t)-50*Math.cos(2*t)-20*Math.cos(3*t)-10*Math.cos(4*t)+25
                 );
             };
 
-            var image = (function() {
-                var c = document.createElement("canvas");
-                var cx = c.getContext("2d");
-                c.width = c.height = settings.particles.size;
+            var img=(function(){
+                var c=document.createElement("canvas");
+                var cx=c.getContext("2d");
+                c.width=c.height=settings.particles.size;
                 cx.beginPath();
 
-                var t = -Math.PI, p = convert(t);
-                cx.moveTo(p.x, p.y);
-                function convert(t) {
-                    var pt = heartPoint(t);
+                var t=-Math.PI,p=convert(t);
+                cx.moveTo(p.x,p.y);
+
+                function convert(t){
+                    var pt=heartPoint(t);
                     return new Point(
-                        c.width/2 + pt.x * c.width / 350,
-                        c.height/2 - pt.y * c.height / 350
+                        c.width/2+pt.x*c.width/350,
+                        c.height/2-pt.y*c.height/350
                     );
                 }
-                while (t < Math.PI) {
-                    t += 0.01;
-                    p = convert(t);
-                    cx.lineTo(p.x, p.y);
+
+                while(t<Math.PI){
+                    t+=0.01;
+                    p=convert(t);
+                    cx.lineTo(p.x,p.y);
                 }
-                cx.fillStyle = "#ff1493";
+                cx.fillStyle="#ff3eaa";
                 cx.fill();
 
-                var img = new Image();
-                img.src = c.toDataURL();
-                return img;
+                var im=new Image();
+                im.src=c.toDataURL();
+                return im;
             })();
 
-            var startTime = new Date().getTime();
-            var showQR = false;
+            var start=Date.now();
+            var qrShown=false;
 
-            function render() {
+            function render(){
                 requestAnimationFrame(render);
-                var newTime = new Date().getTime() / 1000;
-                var dt = newTime - (time || newTime);
-                time = newTime;
 
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                var newT=Date.now()/1000;
+                var dt=newT-(time||newT);
+                time=newT;
 
-                var now = new Date().getTime();
-                var elapsed = now - startTime;
+                ctx.clearRect(0,0,canvas.width,canvas.height);
 
-                /* 🔥 Sau 5s: trái tim mờ dần + QR xuất hiện */
-                if (elapsed > 5000 && !showQR) {
-                    showQR = true;
-                    document.getElementById("pinkboard").style.opacity = "0";
-                    setTimeout(() => {
+                var e=Date.now()-start;
+
+                if(e>5000 && !qrShown){
+                    qrShown=true;
+
+                    document.getElementById("pinkboard").style.opacity="0";
+
+                    setTimeout(()=>{
                         document.getElementById("qr-container").classList.add("show");
-                        setTimeout(() => {
+
+                        setTimeout(()=>{
                             document.querySelector(".message").classList.add("show");
-                        }, 800);
-                    }, 700);
+                            document.getElementById("secret").classList.add("show");
+                        },900);
+
+                    },700);
                 }
 
-                /* Particle giảm dần để tạo hiệu ứng tan biến */
-                var effectiveRate = particleRate;
-                if (elapsed > 3500) {
-                    effectiveRate *= Math.max(0, 1 - (elapsed - 3500) / 2000);
-                }
+                var effective=particleRate;
+                if(e>3500) effective*=Math.max(0,1-(e-3500)/2000);
 
-                var amount = effectiveRate * dt;
-                for (var i = 0; i < amount; i++) {
-                    var pos = heartPoint(Math.PI - 2*Math.PI*Math.random());
-                    var dir = pos.clone().length(settings.particles.velocity);
+                var amount=effective*dt;
+                for(var i=0;i<amount;i++){
+                    var pos=heartPoint(Math.PI-2*Math.PI*Math.random());
+                    var dir=pos.clone().length(settings.particles.velocity);
                     particles.add(
-                        canvas.width/2 + pos.x,
-                        canvas.height/2 - pos.y,
-                        dir.x, -dir.y
+                        canvas.width/2+pos.x,
+                        canvas.height/2-pos.y,
+                        dir.x,-dir.y
                     );
                 }
 
                 particles.update(dt);
-                particles.draw(ctx, image);
+                particles.draw(ctx,img);
             }
 
-            function resize() {
-                canvas.width = window.innerWidth * 1.2;
-                canvas.height = window.innerHeight * 1.2;
+            function resize(){
+                canvas.width=window.innerWidth*1.25;
+                canvas.height=window.innerHeight*1.25;
             }
-            window.onresize = resize;
+            window.onresize=resize;
 
             resize();
             render();
 
         })(document.getElementById("pinkboard"));
     </script>
-
 </body>
 </html>
